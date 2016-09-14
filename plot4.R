@@ -1,0 +1,54 @@
+# step 0 download the data set
+# download ZIP
+if(!file.exists("./data")){dir.create("./data")}
+fileUrl <- "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2Fhousehold_power_consumption.zip"
+
+if(!file.exists("./data/exdata.zip")){
+        download.file(fileUrl,destfile="./data/exdata.zip")
+        
+        # unzip to directory
+        unzip(zipfile="./data/exdata.zip",exdir="./data")
+}
+
+#read data
+exdata <- read.table("./data/household_power_consumption.txt", sep = ";", na.strings = "?", header = TRUE)
+
+#filter data
+sampledata <- exdata[exdata$Date=="1/2/2007" | exdata$Date=="2/2/2007",]
+
+#romove original data
+rm(exdata)
+
+#Get the weekname
+sampledata$weekname <- strptime(paste(sampledata$Date, sampledata$Time), "%d/%m/%Y %H:%M:%S")
+
+#plotting
+par(mfrow = c(2, 2))
+
+#topleft
+with(sampledata, plot(weekname, Global_active_power, type = "l", ylab = "Global Active Power", xlab = ""))
+
+#topright
+with(sampledata, plot(weekname, Voltage, type = "l", ylab = "Voltage", xlab = "datetime"))
+
+#downleft
+with(sampledata, plot(weekname, Sub_metering_1, type = "l", ylab = "Energy sub metering", xlab = "", col = "black"))
+with(sampledata, points(weekname, Sub_metering_2, type = "l", ylab = "Sub_metering_2", xlab = "", col = "red"))
+with(sampledata, points(weekname, Sub_metering_3, type = "l", ylab = "Sub_metering_3", xlab = "", col = "blue"))
+legend("topright",
+       lty = 1,
+       col = c("black", "red", "blue"),
+       legend = c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"),
+       box.lwd = "n",
+       cex = 0.8
+       )
+
+#downright
+with(sampledata, plot(weekname, Global_reactive_power, type = "l", xlab = "datetime", ylab = "Global_reactive_power", ylim = c(0,0.5)))
+
+#copy the plot to png file
+if(!file.exists("./figure")){dir.create("./figure")}
+
+dev.copy(png, file="./figure/plot4.png")
+
+dev.off()
